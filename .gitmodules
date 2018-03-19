@@ -1,0 +1,3 @@
+[submodule "app/src/main/java/com/etiaro/facebook"]
+	path = app/src/main/java/com/etiaro/facebook
+	url = https://github.com/etiaro/facebook-chat
