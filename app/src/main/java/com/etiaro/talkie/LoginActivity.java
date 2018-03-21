@@ -16,8 +16,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.etiaro.facebook.Account;
-import com.etiaro.facebook.Facebook;
-import com.etiaro.facebook.Interfaces;
 import com.etiaro.facebook.functions.Login;
 
 /**
@@ -135,7 +133,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    Interfaces.LoginCallback loginCallbacks = new Interfaces.LoginCallback(){
+    Login.LoginCallback loginCallbacks = new Login.LoginCallback(){
         @Override
         public void fail() {
             mAuthTask = null;
@@ -151,7 +149,7 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             Log.d("id", "id - "+ ac.getUserID());
-            Facebook.getInstance().accounts.put(ac.getUserID(), ac);
+            MemoryManger.getInstance().accounts.put(ac.getUserID(), ac);
 
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra(getString(R.string.intent_loggedIn), ac.getUserID());
