@@ -1,21 +1,16 @@
 package com.etiaro.talkie;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.etiaro.facebook.Account;
-import com.etiaro.facebook.functions.GetThreadList;
-import com.etiaro.facebook.functions.Thread;
-
-import org.json.JSONArray;
-import org.json.JSONException;
+import com.etiaro.facebook.Message;
+import com.etiaro.facebook.functions.GetConversationHistory;
+import com.etiaro.facebook.functions.GetConversationList;
+import com.etiaro.facebook.Conversation;
 
 import java.util.ArrayList;
 
@@ -52,17 +47,38 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
     private void showList(){
-        for(String id : MemoryManger.getInstance().accounts.keySet()) {
+        for(final String id : MemoryManger.getInstance().accounts.keySet()) {
             setTitle(MemoryManger.getInstance().accounts.get(id).getName());
-            GetThreadList ui = new GetThreadList(MemoryManger.getInstance().accounts.get(id), 20, System.currentTimeMillis(), new String[]{"INBOX"});
+            GetConversationList ui = new GetConversationList(MemoryManger.getInstance().accounts.get(id), 20, 0, new String[]{"INBOX"});
 
-            ui.execute(new GetThreadList.ThreadListCallback() {
+            ui.execute(new GetConversationList.ConversationListCallback() {
                 @Override
-                public void success(ArrayList<Thread> list) {
+                public void success(ArrayList<Conversation> list) {
+                    GetConversationHistory th = new GetConversationHistory(MemoryManger.accounts.get(id), list.get(0).thread_key, 20, 0);
+                    th.execute(new GetConversationHistory.ConversationHistoryCallback() {
+                        @Override
+                        public void success(Conversation conversation) {
+                            for(Message m : conversation.messages){
+                                Log.d("msg", m.text);
+                                //TODO conversationActivity
+                            }
+                        }
+
+                        @Override
+                        public void fail() {
+
+                        }
+
+                        @Override
+                        public void cancelled() {
+
+                        }
+                    });
+
                     ArrayAdapter<String> arr = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1);
                     int i = 0;
-                    for(Thread t : list){
-                        arr.add(t.messages.get(0).senderID + t.messages.get(0).snippet);
+                    for(Conversation t : list){
+                        arr.add(t.messages.get(0).senderID + t.messages.get(0).text);
                         final String id = t.messages.get(0).senderID;
                     }
                     ((ListView)findViewById(R.id.msgList)).setAdapter(arr);

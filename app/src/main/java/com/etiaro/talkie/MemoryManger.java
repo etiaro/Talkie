@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.etiaro.facebook.Account;
+import com.etiaro.facebook.Conversation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,6 +27,7 @@ public class MemoryManger{
         return instance;
     }
     static public HashMap<String, Account> accounts = new HashMap<>();
+    static public HashMap<String, Conversation> conversations = new HashMap<>();
 
     public static void saveAccIDs(final Context context, final Callback callback){
         new Thread(new Runnable(){
@@ -64,7 +66,7 @@ public class MemoryManger{
                         Account ac = new Account(JSON);
                         accounts.put(ac.getUserID(), ac);
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     Log.e("Talkie", "Critical error while parsing accounts data");
                 }
                 saveAccIDs(context); //to delete failed accounts
@@ -101,3 +103,5 @@ public class MemoryManger{
         void call();
     }
 }
+
+//TODO conversations Saving
