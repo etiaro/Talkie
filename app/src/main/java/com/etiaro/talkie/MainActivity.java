@@ -13,6 +13,7 @@ import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,15 +39,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
-
-    private void runLoginActv(){
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
-    }
-    private void showList(){
         for(final String id : MemoryManger.getInstance().accounts.keySet()) {
             setTitle(MemoryManger.getInstance().accounts.get(id).getName());
             GetConversationList ui = new GetConversationList(MemoryManger.getInstance().accounts.get(id), 20, 0, new String[]{"INBOX"});
@@ -54,34 +47,10 @@ public class MainActivity extends AppCompatActivity {
             ui.execute(new GetConversationList.ConversationListCallback() {
                 @Override
                 public void success(ArrayList<Conversation> list) {
-                    GetConversationHistory th = new GetConversationHistory(MemoryManger.accounts.get(id), list.get(0).thread_key, 20, 0);
-                    th.execute(new GetConversationHistory.ConversationHistoryCallback() {
-                        @Override
-                        public void success(Conversation conversation) {
-                            for(Message m : conversation.messages){
-                                Log.d("msg", m.text);
-                                //TODO conversationActivity
-                            }
-                        }
-
-                        @Override
-                        public void fail() {
-
-                        }
-
-                        @Override
-                        public void cancelled() {
-
-                        }
-                    });
-
-                    ArrayAdapter<String> arr = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_list_item_1);
-                    int i = 0;
-                    for(Conversation t : list){
-                        arr.add(t.messages.get(0).senderID + t.messages.get(0).text);
-                        final String id = t.messages.get(0).senderID;
-                    }
-                    ((ListView)findViewById(R.id.msgList)).setAdapter(arr);
+                    for(Conversation c : list)
+                        MemoryManger.conversations.put(c.thread_key, c);
+                    MemoryManger.saveAccount(MainActivity.this, MemoryManger.accounts.get(id));
+                    showList();
                 }
 
                 @Override
@@ -95,5 +64,26 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+
+    private void runLoginActv(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void showList(){
+        //TODO sort conversations by timestamp
+
+        final ArrayAdapter<String> arr = new ArrayAdapter<>(MainActivity.this,android.R.layout.simple_list_item_1);
+        for(String key : MemoryManger.conversations.keySet()){
+            arr.add(MemoryManger.conversations.get(key).messages.get(0).text);
+        }
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ListView)findViewById(R.id.msgList)).setAdapter(arr);
+            }
+        });
     }
 }

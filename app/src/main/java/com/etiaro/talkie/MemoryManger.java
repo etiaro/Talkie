@@ -9,8 +9,12 @@ import com.etiaro.facebook.Conversation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * Created by jakub on 21.03.18.
@@ -27,7 +31,7 @@ public class MemoryManger{
         return instance;
     }
     static public HashMap<String, Account> accounts = new HashMap<>();
-    static public HashMap<String, Conversation> conversations = new HashMap<>();
+    static public LinkedHashMap<String, Conversation> conversations = new LinkedHashMap<>();
 
     public static void saveAccIDs(final Context context, final Callback callback){
         new Thread(new Runnable(){
@@ -60,14 +64,25 @@ public class MemoryManger{
                     for(int i = 0; i < obj.length(); i++){
                         SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+obj.getString(i), Context.MODE_PRIVATE);
                         String JSON = sp.getString(context.getString(R.string.sp_account), null);
-                        if(JSON == null){
+                        if(JSON == null)
                             continue;
-                        }
                         Account ac = new Account(JSON);
                         accounts.put(ac.getUserID(), ac);
+
+                        JSON = sp.getString(context.getString(R.string.sp_conversations), null);
+                        if(JSON == null)
+                            continue;
+
+                        JSONObject convs = new JSONObject(JSON);
+                        Iterator<String> it = convs.keys();
+                        while(it.hasNext()){
+                            String key = it.next();
+                            conversations.put(key, new Conversation(convs.getJSONObject(key)));
+                        }
                     }
                 } catch (Exception e) {
-                    Log.e("Talkie", "Critical error while parsing accounts data");
+                    e.printStackTrace();
+                    Log.e("Talkie", "Critical error while parsing accounts data "+e.toString());
                 }
                 saveAccIDs(context); //to delete failed accounts
 
@@ -88,6 +103,14 @@ public class MemoryManger{
             public void run() {
                 SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+ac.getUserID(), Context.MODE_PRIVATE);
                 sp.edit().putString(context.getString(R.string.sp_account), ac.toString()).apply();
+                JSONObject json = new JSONObject();
+                for(String key : conversations.keySet())
+                    try {
+                        json.put(key, conversations.get(key).toJSON());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();  //TODO not all conversations to all users
                 Log.d("talkie", "Saved account data to "+context.getString(R.string.shared_pref_codes)+"."+ac.getUserID());
 
                 if(callback != null)
