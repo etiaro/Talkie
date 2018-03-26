@@ -127,4 +127,4 @@ public class MemoryManger{
     }
 }
 
-//TODO conversations Saving
+//TODO conversations Saving, loading and sorting
