@@ -2,6 +2,7 @@ package com.etiaro.talkie;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.telecom.Call;
 import android.util.Log;
 
 import com.etiaro.facebook.Account;
@@ -12,9 +13,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jakub on 21.03.18.
@@ -69,6 +74,7 @@ public class MemoryManger{
                         Account ac = new Account(JSON);
                         accounts.put(ac.getUserID(), ac);
 
+                        sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
                         JSON = sp.getString(context.getString(R.string.sp_conversations), null);
                         if(JSON == null)
                             continue;
@@ -103,16 +109,7 @@ public class MemoryManger{
             public void run() {
                 SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+ac.getUserID(), Context.MODE_PRIVATE);
                 sp.edit().putString(context.getString(R.string.sp_account), ac.toString()).apply();
-                JSONObject json = new JSONObject();
-                for(String key : conversations.keySet())
-                    try {
-                        json.put(key, conversations.get(key).toJSON());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();  //TODO not all conversations to all users
                 Log.d("talkie", "Saved account data to "+context.getString(R.string.shared_pref_codes)+"."+ac.getUserID());
-
                 if(callback != null)
                     callback.call();
             }
@@ -122,6 +119,52 @@ public class MemoryManger{
         saveAccount(context, ac, null);
     }
 
+    public static void saveConversations(final Context context, final Callback callback){
+        sortConversations();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject json = new JSONObject();
+                for(String key : conversations.keySet()) {
+                    try {
+                        json.put(key, conversations.get(key).toJSON());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), context.MODE_PRIVATE);
+                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();
+                Log.d("info", "saved conversations");
+                if(callback != null)
+                    callback.call();
+            }
+        }).start();
+    }
+    public static void saveConversations(final Context context){
+        saveConversations(context, null);
+    }
+
+    static public void sortConversations(){
+        orderByValue(MemoryManger.conversations, new Comparator<Conversation>() {
+            @Override
+            public int compare(Conversation c1, Conversation c2) {
+                return c1.compareTo(c2);
+            }
+        });
+    }
+    static <K, V> void orderByValue(LinkedHashMap<K, V> m, final Comparator<? super V> c) {
+        List<Map.Entry<K, V>> entries = new ArrayList<>(m.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> lhs, Map.Entry<K, V> rhs) {
+                return c.compare(lhs.getValue(), rhs.getValue());
+            }
+        });
+        m.clear();
+        for(Map.Entry<K, V> e : entries) {
+            m.put(e.getKey(), e.getValue());
+        }
+    }
     public interface Callback{
         void call();
     }
