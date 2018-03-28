@@ -1,7 +1,9 @@
 package com.etiaro.talkie;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.telecom.Call;
 import android.util.Log;
 
@@ -12,6 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,12 +125,14 @@ public class MemoryManger{
     }
 
     public static void saveConversations(final Context context, final Callback callback){
-        sortConversations();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 JSONObject json = new JSONObject();
+                int num = 50; //saves ONLY @num newest conversations
                 for(String key : conversations.keySet()) {
+                    if(num-- < 0)
+                        break;
                     try {
                         json.put(key, conversations.get(key).toJSON());
                     } catch (JSONException e) {
@@ -144,6 +151,19 @@ public class MemoryManger{
         saveConversations(context, null);
     }
 
+    public static void updateConversations(ArrayList<Conversation> convs){
+        for(Conversation c : convs){
+            if(conversations.containsKey(c.thread_key))
+                try {
+                    conversations.get(c.thread_key).update(c.toJSON());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            else
+                conversations.put(c.thread_key, c);
+        }
+        sortConversations();
+    }
     static public void sortConversations(){
         orderByValue(MemoryManger.conversations, new Comparator<Conversation>() {
             @Override
@@ -165,6 +185,43 @@ public class MemoryManger{
             m.put(e.getKey(), e.getValue());
         }
     }
+
+    public static void saveImage(final Context context, final Bitmap bm, final String id, final Callback callback){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ContextWrapper cw = new ContextWrapper(context);
+                File directory = cw.getDir("thumbImg", Context.MODE_PRIVATE);
+                // Create imageDir
+                File mypath = new File(directory,id +".jpg");
+
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(mypath);
+                    // Use the compress method on the BitMap object to write image to the OutputStream
+                    bm.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(callback != null)
+                    callback.call();
+            }
+        }).start();
+    }
+    public static void saveImage(Context context, Bitmap bitmap, String id){
+        saveImage(context, bitmap, id, null);
+    }
+    public static String getImagePath(String id){
+        return "/data/data/com.etiaro.talkie/app_thumbImg/"+id+".jpg";
+    }
+
     public interface Callback{
         void call();
     }

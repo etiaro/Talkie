@@ -4,17 +4,15 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.etiaro.facebook.Message;
-import com.etiaro.facebook.functions.GetConversationHistory;
+import com.etiaro.facebook.Account;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
+import com.etiaro.facebook.functions.GetUserInfo;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +27,11 @@ public class MainActivity extends AppCompatActivity {
             MemoryManger.saveAccount(this, MemoryManger.getInstance().accounts.get(getIntent().getStringExtra(getString(R.string.intent_loggedIn))));
             Log.d("talkie", "Fully logged in and saved");
         }
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         MemoryManger.loadSharedPrefs(this, new MemoryManger.Callback() {
             @Override
             public void call() {
@@ -49,10 +51,9 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
     private void showList(){
-        final ArrayAdapter<String> arr = new ArrayAdapter<>(MainActivity.this,android.R.layout.simple_list_item_1);
-        for(String key : MemoryManger.conversations.keySet()){
-            arr.add(MemoryManger.conversations.get(key).messages.get(0).text);
-        }
+        //TODO my own listAdapter to show conversations, clickable and start activity(ConversationActivity)
+        final ConversationListAdapter arr = new ConversationListAdapter(MainActivity.this, R.layout.conversation_row,
+                new ArrayList<Conversation>(MemoryManger.conversations.values()));
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -67,8 +68,7 @@ public class MainActivity extends AppCompatActivity {
             ui.execute(new GetConversationList.ConversationListCallback() {
                 @Override
                 public void success(ArrayList<Conversation> list) {
-                    for(Conversation c : list)
-                        MemoryManger.conversations.put(c.thread_key, c);
+                    MemoryManger.updateConversations(list);
 
                     MemoryManger.saveConversations(MainActivity.this);
                     showList();
