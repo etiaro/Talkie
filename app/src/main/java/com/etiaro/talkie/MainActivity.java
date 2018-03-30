@@ -6,21 +6,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
 
-import com.etiaro.facebook.Account;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
-import com.etiaro.facebook.functions.GetUserInfo;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    ConversationListAdapter arr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         if(getIntent().hasExtra(getString(R.string.intent_loggedIn))){ //logged-in
             MemoryManger.saveAccIDs(this);
@@ -50,16 +47,25 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
     private void showList(){
-        //TODO my own listAdapter to show conversations, clickable and start activity(ConversationActivity)
-        final ConversationListAdapter arr = new ConversationListAdapter(MainActivity.this, R.layout.conversation_row,
-                new ArrayList<Conversation>(MemoryManger.conversations.values()));
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((ListView)findViewById(R.id.msgList)).setAdapter(arr);
+                ListView view = findViewById(R.id.msgList);
+                if(arr == null) {
+                    arr = new ConversationListAdapter(MainActivity.this, R.layout.conversation_row,
+                            new ArrayList<>(MemoryManger.conversations.values()));
+                    view.setAdapter(arr);
+                }else {
+
+                    arr.clear();
+                    arr.addAll(new ArrayList<>(MemoryManger.conversations.values()));
+                    arr.notifyDataSetChanged();
+                }
             }
         });
+
     }
     private void updateConversationList(){
         for(final String id : MemoryManger.getInstance().accounts.keySet()) {
@@ -68,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             ui.execute(new GetConversationList.ConversationListCallback() {
                 @Override
                 public void success(ArrayList<Conversation> list) {
-                    MemoryManger.updateConversations(list);
+                    MemoryManger.updateConversations(list.toArray(new Conversation[list.size()]));
 
                     MemoryManger.saveConversations(MainActivity.this);
                     showList();

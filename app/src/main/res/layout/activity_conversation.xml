@@ -6,4 +6,8 @@
     android:layout_height="match_parent"
     tools:context="com.etiaro.talkie.ConversationActivity">
 
+    <ListView
+        android:id="@+id/messages"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
 </android.support.constraint.ConstraintLayout>

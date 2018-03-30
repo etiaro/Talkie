@@ -1,15 +1,10 @@
 package com.etiaro.talkie;
 
 
-import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Handler;
 import android.util.Log;
-import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +15,7 @@ import android.widget.TextView;
 import com.etiaro.facebook.Conversation;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -50,8 +46,8 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
 
         if (conv != null) {
             ImageView img = v.findViewById(R.id.conversationImage);
-            TextView tt2 = v.findViewById(R.id.conversationName);
-            TextView tt3 = v.findViewById(R.id.conversationMessage);
+            TextView name = v.findViewById(R.id.conversationName);
+            TextView msg = v.findViewById(R.id.conversationMessage);
 
             if (img != null) {
                 if(imgs.containsKey(conv.thread_key))   //file is loaded, loading from variable
@@ -63,13 +59,11 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
                     InternetService.loadImage(conv.image, img, conv.thread_key, context);
             }
 
-            if (tt2 != null) {
-                tt2.setText(conv.name);
-            }
+            if (name != null)
+                name.setText(conv.name);
 
-            if (tt3 != null) {
-                tt3.setText(conv.messages.get(conv.messages.size()-1).text);
-            }
+            if (msg != null)
+                msg.setText(conv.snippet);
         }
 
         v.setOnClickListener(new View.OnClickListener() {

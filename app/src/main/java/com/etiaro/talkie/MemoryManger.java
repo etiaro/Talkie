@@ -151,7 +151,7 @@ public class MemoryManger{
         saveConversations(context, null);
     }
 
-    public static void updateConversations(ArrayList<Conversation> convs){
+    public static void updateConversations(Conversation... convs){
         for(Conversation c : convs){
             if(conversations.containsKey(c.thread_key))
                 try {
@@ -163,6 +163,7 @@ public class MemoryManger{
                 conversations.put(c.thread_key, c);
         }
         sortConversations();
+
     }
     static public void sortConversations(){
         orderByValue(MemoryManger.conversations, new Comparator<Conversation>() {
@@ -199,7 +200,7 @@ public class MemoryManger{
                 try {
                     fos = new FileOutputStream(mypath);
                     // Use the compress method on the BitMap object to write image to the OutputStream
-                    bm.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
