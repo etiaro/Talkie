@@ -1,6 +1,8 @@
 package com.etiaro.talkie;
 
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,10 +41,20 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     showList();
                     updateConversationList();
+                    //TODO callbacks of listen
                     Listen.start(MainActivity.this, (Account)MemoryManger.accounts.values().toArray()[0], new Listen.ListenCallbacks() {
                         @Override
                         public void newMessage(String msg) {
                             Log.d("NEWMSG", msg);
+                            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(MainActivity.this)
+                                    .setSmallIcon(R.drawable.ic_launcher_background)
+                                    .setContentTitle("Message")
+                                    .setContentText(msg)
+                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
+                            notificationManager.notify(100, mBuilder.build());
+
                         }
                     });
                 }
