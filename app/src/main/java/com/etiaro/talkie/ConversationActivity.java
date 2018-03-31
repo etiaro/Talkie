@@ -64,6 +64,7 @@ public class ConversationActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ((ListView)findViewById(R.id.messages)).setAdapter(arr);
+                ((ListView)findViewById(R.id.messages)).setSelection(arr.getCount()-1);
             }
         });
     }

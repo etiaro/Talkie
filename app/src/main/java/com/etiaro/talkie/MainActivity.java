@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.etiaro.facebook.Account;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
+import com.etiaro.facebook.functions.Listen;
 
 import java.util.ArrayList;
 
@@ -37,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     showList();
                     updateConversationList();
+                    Listen.start(MainActivity.this, (Account)MemoryManger.accounts.values().toArray()[0], new Listen.ListenCallbacks() {
+                        @Override
+                        public void newMessage(String msg) {
+                            Log.d("NEWMSG", msg);
+                        }
+                    });
                 }
             }
         });

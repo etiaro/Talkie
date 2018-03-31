@@ -88,7 +88,7 @@ public class MemoryManger{
                         Iterator<String> it = convs.keys();
                         while(it.hasNext()){
                             String key = it.next();
-                            conversations.put(key, new Conversation(convs.getJSONObject(key)));
+                            conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
                         }
                     }
                 } catch (Exception e) {
