@@ -29,6 +29,9 @@
 
         <service
             android:name="com.etiaro.facebook.functions.Listen"
+            android:exported="false" />
+        <service
+            android:name=".MainService"
             android:exported="false"></service>
     </application>
 

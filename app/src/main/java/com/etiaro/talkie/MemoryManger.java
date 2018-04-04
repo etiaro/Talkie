@@ -130,11 +130,11 @@ public class MemoryManger{
             public void run() {
                 JSONObject json = new JSONObject();
                 int num = 50; //saves ONLY @num newest conversations
-                for(String key : conversations.keySet()) {
+                for(Conversation c : conversations.values()) {
                     if(num-- < 0)
                         break;
                     try {
-                        json.put(key, conversations.get(key).toJSON());
+                        json.put(c.thread_key, c.toJSON());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -163,7 +163,6 @@ public class MemoryManger{
                 conversations.put(c.thread_key, c);
         }
         sortConversations();
-
     }
     static public void sortConversations(){
         orderByValue(MemoryManger.conversations, new Comparator<Conversation>() {

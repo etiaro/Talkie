@@ -57,8 +57,9 @@ public class ConversationActivity extends AppCompatActivity {
 
     private void showMessages(){
         ArrayList<String> items = new ArrayList<>();
-        for(Message m : MemoryManger.conversations.get(conversationID).messages.values())
-            items.add(m.text);
+        int length = MemoryManger.conversations.get(conversationID).messages.size();
+        for(int i = length-1; i >= 0; i--)
+            items.add(((Message)MemoryManger.conversations.get(conversationID).messages.values().toArray()[i]).text);
         final ArrayAdapter<String> arr = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         this.runOnUiThread(new Runnable() {
             @Override

@@ -1,6 +1,11 @@
 package com.etiaro.talkie;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +14,7 @@ import android.util.Log;
 import android.widget.ListView;
 
 import com.etiaro.facebook.Account;
+import com.etiaro.facebook.Message;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.functions.Listen;
@@ -28,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
             MemoryManger.saveAccount(this, MemoryManger.getInstance().accounts.get(getIntent().getStringExtra(getString(R.string.intent_loggedIn))));
             Log.d("talkie", "Fully logged in and saved");
         }
+        Notifications.initGroups(this);
     }
 
     @Override
@@ -41,20 +48,14 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     showList();
                     updateConversationList();
-                    //TODO callbacks of listen
-                    Listen.start(MainActivity.this, (Account)MemoryManger.accounts.values().toArray()[0], new Listen.ListenCallbacks() {
+                    MainService.start(MainActivity.this, new Listen.ListenCallbacks() {
                         @Override
-                        public void newMessage(String msg) {
-                            Log.d("NEWMSG", msg);
-                            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(MainActivity.this)
-                                    .setSmallIcon(R.drawable.ic_launcher_background)
-                                    .setContentTitle("Message")
-                                    .setContentText(msg)
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                        public void newMessage(Message msg) {
+                            showList();
+                        }
 
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
-                            notificationManager.notify(100, mBuilder.build());
-
+                        @Override
+                        public void typing(String threadid, String userid, boolean isTyping) {
                         }
                     });
                 }
@@ -78,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
                             new ArrayList<>(MemoryManger.conversations.values()));
                     view.setAdapter(arr);
                 }else {
-
                     arr.clear();
                     arr.addAll(new ArrayList<>(MemoryManger.conversations.values()));
                     arr.notifyDataSetChanged();
