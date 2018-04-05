@@ -18,8 +18,10 @@
     <!-- String related to sharedPrefs -->
     <string name="shared_pref_codes">com.etiaro.talkie.SPCodes</string>
     <string name="shared_pref_conversations">com.etiaro.talkie.conversations</string>
+    <string name="shared_pref_users">com.etiaro.talkie.users</string>
     <string name="intent_loggedIn">loggedInID</string>
     <string name="sp_account">account</string>
+    <string name="sp_users">users</string>
     <string name="sp_conversations">conversations</string>
 
     <string name="title_activity_temp">TempActivity</string>

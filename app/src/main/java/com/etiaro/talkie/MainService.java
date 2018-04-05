@@ -42,6 +42,7 @@ public class MainService extends IntentService {
                             tmp.updateMessages(msg);
                             tmp.unread_count++;
                             MemoryManger.updateConversations(tmp);
+
                             MemoryManger.saveConversations(MainService.this);
                             callbacks.newMessage(msg);
                         }else{

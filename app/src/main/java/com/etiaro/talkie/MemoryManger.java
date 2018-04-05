@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.etiaro.facebook.Account;
 import com.etiaro.facebook.Conversation;
+import com.etiaro.facebook.functions.GetUserInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +43,7 @@ public class MemoryManger{
     }
     static public HashMap<String, Account> accounts = new HashMap<>();
     static public LinkedHashMap<String, Conversation> conversations = new LinkedHashMap<>();
+    static public HashMap<String, GetUserInfo.UserInfo> users = new HashMap<>();
 
     public static void saveAccIDs(final Context context, final Callback callback){
         new Thread(new Runnable(){
@@ -71,6 +73,7 @@ public class MemoryManger{
                 String IDs = sharedPref.getString(context.getString(R.string.shared_pref_codes), null);
                 try{
                     JSONArray obj = new JSONArray(IDs);
+                    //accounts
                     for(int i = 0; i < obj.length(); i++){
                         SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+obj.getString(i), Context.MODE_PRIVATE);
                         String JSON = sp.getString(context.getString(R.string.sp_account), null);
@@ -78,18 +81,25 @@ public class MemoryManger{
                             continue;
                         Account ac = new Account(JSON);
                         accounts.put(ac.getUserID(), ac);
+                    }
+                    //users
+                    SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
+                    String JSON = sp.getString(context.getString(R.string.sp_users), null);
+                    JSONObject users = new JSONObject(JSON);
+                    Iterator<String> it = users.keys();
+                    while(it.hasNext()){
+                        String key = it.next();
+                        MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
+                    }
+                    //conversations
+                    sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
+                    JSON = sp.getString(context.getString(R.string.sp_conversations), null);
 
-                        sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
-                        JSON = sp.getString(context.getString(R.string.sp_conversations), null);
-                        if(JSON == null)
-                            continue;
-
-                        JSONObject convs = new JSONObject(JSON);
-                        Iterator<String> it = convs.keys();
-                        while(it.hasNext()){
-                            String key = it.next();
-                            conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
-                        }
+                    JSONObject convs = new JSONObject(JSON);
+                    it = convs.keys();
+                    while(it.hasNext()){
+                        String key = it.next();
+                        conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -106,6 +116,26 @@ public class MemoryManger{
     }
     public static void loadSharedPrefs(final Context context){
         loadSharedPrefs(context, null);
+    }
+
+    public static void updateUsers(final Context context, GetUserInfo.UserInfo... list){
+        for(GetUserInfo.UserInfo u : list)
+            users.put(u.id, u);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                JSONObject obj = new JSONObject();
+                for(GetUserInfo.UserInfo u : users.values())
+                    obj.put(u.id, u.toString());
+                SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
+                sp.edit().putString(context.getString(R.string.sp_users), obj.toString()).apply();
+                Log.d("talkie", "Saved users data");
+                } catch (JSONException e) {
+                    Log.e("Talkie","Error on saving users");
+                }
+            }
+        }).start();
     }
 
     public static void saveAccount(final Context context, final Account ac, final Callback callback) {

@@ -4,6 +4,7 @@ package com.etiaro.talkie;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,13 +51,25 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             TextView msg = v.findViewById(R.id.conversationMessage);
 
             if (img != null) {
-                if(imgs.containsKey(conv.thread_key))   //file is loaded, loading from variable
+                if(imgs.containsKey(conv.thread_key)) {   //file is loaded, loading from variable
                     img.setImageDrawable(imgs.get(conv.thread_key));
-                else if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) { //file exists, loading from file
+                    if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) // file is still here
+                        if(!imgs.get(conv.thread_key).equals(Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key)))) { //it had changed
+                            imgs.put(conv.thread_key, Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key))); //so im updating it
+                            img.setImageDrawable(imgs.get(conv.thread_key));
+                    }
+                }else if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) { //file exists, loading from file
                     imgs.put(conv.thread_key, Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key)));
                     img.setImageDrawable(imgs.get(conv.thread_key));
-                }else //downloading image
+                }else if(conv.image != null) {//downloading image
                     InternetService.loadImage(conv.image, img, conv.thread_key, context);
+                    imgs.put(conv.thread_key, ContextCompat.getDrawable(context, R.drawable.ic_launcher_background));
+                    img.setImageDrawable(imgs.get(conv.thread_key));
+                }else{
+                    imgs.put(conv.thread_key, ContextCompat.getDrawable(context, R.drawable.ic_launcher_background));
+                    img.setImageDrawable(imgs.get(conv.thread_key));
+                }
+
             }
 
             if (name != null)

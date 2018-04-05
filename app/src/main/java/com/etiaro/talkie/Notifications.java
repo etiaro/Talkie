@@ -32,18 +32,27 @@ public class Notifications {
     static void newMessage(Context c, Message msg){
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(c, "Talkie")
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Message")
                 .setContentText(msg.text)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        if(MemoryManger.users.containsKey(msg.senderID))
+            mBuilder.setContentTitle(MemoryManger.users.get(msg.senderID).name);
+        else
+            mBuilder.setContentTitle("Message");
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(c);
         notificationManager.notify(100, mBuilder.build());
     }
     static  void typing(Context c, String threadid, String userid){
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(c,  "Talkie")
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle(threadid)
-                .setContentText(userid)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        if(MemoryManger.conversations.containsKey(threadid))
+            mBuilder.setContentTitle(MemoryManger.conversations.get(threadid).name);
+        else
+            mBuilder.setContentTitle(threadid);
+        if(MemoryManger.users.containsKey(userid))
+            mBuilder.setContentText(MemoryManger.users.get(userid).name+" is writing...");
+        else
+            mBuilder.setContentText(userid+" is writing...");
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(c);
         notificationManager.notify(101, mBuilder.build());
     }

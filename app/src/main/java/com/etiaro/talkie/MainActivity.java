@@ -17,6 +17,7 @@ import com.etiaro.facebook.Account;
 import com.etiaro.facebook.Message;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
+import com.etiaro.facebook.functions.GetUserInfo;
 import com.etiaro.facebook.functions.Listen;
 
 import java.util.ArrayList;
@@ -93,10 +94,10 @@ public class MainActivity extends AppCompatActivity {
 
             ui.execute(new GetConversationList.ConversationListCallback() {
                 @Override
-                public void success(ArrayList<Conversation> list) {
+                public void success(ArrayList<Conversation> list, ArrayList<GetUserInfo.UserInfo> users) {
                     MemoryManger.updateConversations(list.toArray(new Conversation[list.size()]));
-
                     MemoryManger.saveConversations(MainActivity.this);
+                    MemoryManger.updateUsers(MainActivity.this, users.toArray(new GetUserInfo.UserInfo[users.size()]));
                     showList();
                 }
 
