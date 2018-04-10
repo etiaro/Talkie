@@ -6,12 +6,16 @@
 
     <TableRow android:layout_width="fill_parent"
         android:id="@+id/TableRow01"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground">
 
         <ImageView
             android:id="@+id/conversationImage"
-            android:layout_width="50sp"
-            android:layout_height="50sp" />
+            android:layout_width="40sp"
+            android:layout_height="40sp"
+            android:layout_margin="10sp"
+            android:background="@drawable/ic_launcher_background"
+            android:src="@drawable/circleshape"/>
 
         <TableLayout
             android:layout_width="match_parent"
@@ -25,11 +29,12 @@
                     android:id="@+id/conversationName"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp"
                     android:layout_weight="1"
-                    android:height="25sp"
+                    android:height="30sp"
                     android:text="conversationName"
                     android:textColor="@android:color/black"
-                    android:textSize="15sp" />
+                    android:textSize="20sp" />
             </TableRow>
 
             <TableRow
@@ -40,6 +45,7 @@
                     android:id="@+id/conversationMessage"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="3sp"
                     android:layout_weight="1"
                     android:height="25sp"
                     android:text="Last Message"

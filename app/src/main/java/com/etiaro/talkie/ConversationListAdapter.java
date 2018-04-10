@@ -4,6 +4,8 @@ package com.etiaro.talkie;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class ConversationListAdapter extends ArrayAdapter<Conversation> {
     Context context;
-    HashMap<String, Drawable> imgs = new HashMap<>();
+    public HashMap<String, Drawable> imgs = new HashMap<>();
 
     public ConversationListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -43,31 +45,23 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             v = vi.inflate(R.layout.conversation_row, null);
         }
 
-        final Conversation conv = getItem(position);
+        Conversation conv = getItem(position);
 
         if (conv != null) {
-            ImageView img = v.findViewById(R.id.conversationImage);
+            final ImageView img = v.findViewById(R.id.conversationImage);
             TextView name = v.findViewById(R.id.conversationName);
             TextView msg = v.findViewById(R.id.conversationMessage);
 
             if (img != null) {
-                if(imgs.containsKey(conv.thread_key)) {   //file is loaded, loading from variable
-                    img.setImageDrawable(imgs.get(conv.thread_key));
-                    if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) // file is still here
-                        if(!imgs.get(conv.thread_key).equals(Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key)))) { //it had changed
-                            imgs.put(conv.thread_key, Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key))); //so im updating it
-                            img.setImageDrawable(imgs.get(conv.thread_key));
-                    }
-                }else if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) { //file exists, loading from file
+                if(imgs.containsKey(conv.thread_key)){//file is loaded, loading from variable
+                    img.setBackground(imgs.get(conv.thread_key));
+                }else if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) { //file exists, loading
                     imgs.put(conv.thread_key, Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key)));
-                    img.setImageDrawable(imgs.get(conv.thread_key));
+                    img.setBackground(imgs.get(conv.thread_key));
                 }else if(conv.image != null) {//downloading image
-                    InternetService.loadImage(conv.image, img, conv.thread_key, context);
+                    InternetService.loadImage(conv.image, this, conv.thread_key, context);
                     imgs.put(conv.thread_key, ContextCompat.getDrawable(context, R.drawable.ic_launcher_background));
-                    img.setImageDrawable(imgs.get(conv.thread_key));
-                }else{
-                    imgs.put(conv.thread_key, ContextCompat.getDrawable(context, R.drawable.ic_launcher_background));
-                    img.setImageDrawable(imgs.get(conv.thread_key));
+                    img.setBackground(imgs.get(conv.thread_key));
                 }
 
             }
@@ -78,13 +72,13 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             if (msg != null)
                 msg.setText(conv.snippet);
         }
-
+        final Conversation c = conv;
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("click", conv.name);
+                Log.d("click", c.name);
                 Intent intent = new Intent(context, ConversationActivity.class);
-                intent.putExtra("thread_key", conv.thread_key);
+                intent.putExtra("thread_key", c.thread_key);
                 context.startActivity(intent);
             }
         });
