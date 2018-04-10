@@ -85,21 +85,24 @@ public class MemoryManger{
                     //users
                     SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
                     String JSON = sp.getString(context.getString(R.string.sp_users), null);
-                    JSONObject users = new JSONObject(JSON);
-                    Iterator<String> it = users.keys();
-                    while(it.hasNext()){
-                        String key = it.next();
-                        MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
+                    if(JSON != null) {
+                        JSONObject users = new JSONObject(JSON);
+                        Iterator<String> it = users.keys();
+                        while (it.hasNext()) {
+                            String key = it.next();
+                            MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
+                        }
                     }
                     //conversations
                     sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
                     JSON = sp.getString(context.getString(R.string.sp_conversations), null);
-
-                    JSONObject convs = new JSONObject(JSON);
-                    it = convs.keys();
-                    while(it.hasNext()){
-                        String key = it.next();
-                        conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
+                    if(JSON != null) {
+                        JSONObject convs = new JSONObject(JSON);
+                        Iterator<String> it = convs.keys();
+                        while (it.hasNext()) {
+                            String key = it.next();
+                            conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

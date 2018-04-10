@@ -1,59 +1,99 @@
 package com.etiaro.talkie;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
+import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.Message;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by jakub on 04.04.18.
  */
 
 public class Notifications {
+    static class Notification {
+        int id;
+        NotificationCompat.Builder builder;
+        NotificationCompat.InboxStyle style;
+        Notification(Context c, String[] lines, int id, String convId){
+            style = new NotificationCompat.InboxStyle();
+            for(String l : lines)
+                style.addLine(l);
+            builder = new NotificationCompat.Builder(c, "Talkie")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setStyle(style);
+            this.id = id;
+            Intent intent = new Intent(c, ConversationActivity.class);
+            intent.putExtra("thread_key", convId);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, intent, 0);
+            builder.setContentIntent(pendingIntent);
+        }
+        Notification(Context c, Message msg){
+            style = new NotificationCompat.InboxStyle()
+                    .addLine(msg.text);
+            builder = new NotificationCompat.Builder(c, "Talkie")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setStyle(style);
+            this.id = notifications.size();
+            Intent intent = new Intent(c, ConversationActivity.class);
+            intent.putExtra("thread_key", msg.conversation_id);
+            PendingIntent pendingIntent = PendingIntent.getActivity(c, 0, intent, 0);
+            builder.setContentIntent(pendingIntent);
+        }
+        void addLine(String line){
+            style.addLine(line);
+            builder.setStyle(style);
+        }
+        void remove(Context c){
+            NotificationManager notificationManager =
+                    (NotificationManager) c.getSystemService(c.NOTIFICATION_SERVICE);
+            notificationManager.cancel(id);
+            if(notifications.containsKey(id))
+               notifications.remove(id);
+        }
+
+    }
+    static LinkedHashMap<String, Notification> notifications = new LinkedHashMap<>();
+
     static void initGroups(Context c){
-        NotificationManager notificationManager =
-                (NotificationManager) c.getSystemService(c.NOTIFICATION_SERVICE);
         if(Build.VERSION.SDK_INT >= 27) {
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel notificationChannel = new NotificationChannel("Talkie", "Talkie", importance);
+            NotificationManager notificationManager =
+                (NotificationManager) c.getSystemService(c.NOTIFICATION_SERVICE);
+            if(notificationManager.getNotificationChannel("Talkie") != null)
+                return;
+            NotificationChannel notificationChannel = new NotificationChannel("Talkie", "Talkie", NotificationManager.IMPORTANCE_DEFAULT);
             notificationChannel.enableLights(true);
             notificationChannel.setLightColor(Color.RED);
             notificationChannel.enableVibration(true);
-            notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            notificationChannel.setVibrationPattern(new long[]{800, 100, 500, 200, 200});
             notificationManager.createNotificationChannel(notificationChannel);
         }
     }
 
     static void newMessage(Context c, Message msg){
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(c, "Talkie")
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentText(msg.text)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        if(MemoryManger.users.containsKey(msg.senderID))
-            mBuilder.setContentTitle(MemoryManger.users.get(msg.senderID).name);
-        else
-            mBuilder.setContentTitle("Message");
+        if(notifications.containsKey(msg.conversation_id)){
+            notifications.get(msg.conversation_id).addLine(msg.text);
+        }else {
+            notifications.put(msg.conversation_id, new Notification(c, msg));
+            if (MemoryManger.conversations.containsKey(msg.conversation_id))
+                notifications.get(msg.conversation_id).builder.setContentTitle(MemoryManger.conversations.get(msg.conversation_id).name);
+            else
+                notifications.get(msg.conversation_id).builder.setContentTitle(msg.conversation_id);
+        }
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(c);
-        notificationManager.notify(100, mBuilder.build());
-    }
-    static  void typing(Context c, String threadid, String userid){
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(c,  "Talkie")
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        if(MemoryManger.conversations.containsKey(threadid))
-            mBuilder.setContentTitle(MemoryManger.conversations.get(threadid).name);
-        else
-            mBuilder.setContentTitle(threadid);
-        if(MemoryManger.users.containsKey(userid))
-            mBuilder.setContentText(MemoryManger.users.get(userid).name+" is writing...");
-        else
-            mBuilder.setContentText(userid+" is writing...");
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(c);
-        notificationManager.notify(101, mBuilder.build());
+        notificationManager.notify(notifications.get(msg.conversation_id).id, notifications.get(msg.conversation_id).builder.build());
     }
 }

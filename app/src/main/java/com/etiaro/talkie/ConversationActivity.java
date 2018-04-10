@@ -1,5 +1,6 @@
 package com.etiaro.talkie;
 
+import android.app.NotificationManager;
 import android.media.MediaMetadata;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ public class ConversationActivity extends AppCompatActivity {
         conversationID = getIntent().getStringExtra("thread_key");
         if(conversationID == null){
             finish();
+            return;
         }
         setTitle(MemoryManger.conversations.get(conversationID).name);
     }
@@ -53,6 +55,13 @@ public class ConversationActivity extends AppCompatActivity {
 
                 }
             });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(Notifications.notifications.containsKey(conversationID))
+            Notifications.notifications.get(conversationID).remove(this);
     }
 
     private void showMessages(){

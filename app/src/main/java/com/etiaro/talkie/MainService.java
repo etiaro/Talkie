@@ -65,7 +65,6 @@ public class MainService extends IntentService {
 
                     @Override
                     public void typing(String threadid, String userid, boolean isTyping) {
-                        Notifications.typing(MainService.this, threadid, userid);
                         if(MemoryManger.conversations.containsKey(threadid))
                             if(isTyping) {
                                 if (!MemoryManger.conversations.get(threadid).typing.contains(userid))
