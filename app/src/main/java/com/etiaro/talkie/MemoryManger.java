@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.telecom.Call;
 import android.util.Log;
 
@@ -15,9 +18,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +41,8 @@ import java.util.Map;
 public class MemoryManger{
     //Thats the singlethon stuff
     private static MemoryManger instance = null;
+    private static HashMap<String, BitmapDrawable> imgs = new HashMap<>();
+
     protected MemoryManger() {}
     public static MemoryManger getInstance() {
         if(instance == null) {
@@ -122,18 +131,23 @@ public class MemoryManger{
     }
 
     public static void updateUsers(final Context context, GetUserInfo.UserInfo... list){
-        for(GetUserInfo.UserInfo u : list)
+        for(GetUserInfo.UserInfo u : list) {
+            if(users.containsKey(u.id))
+                if(users.get(u.id).thumbSrc != u.thumbSrc){
+                    loadImage(u.thumbSrc, u.id, context, null);//update image - changed
+                }
             users.put(u.id, u);
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                JSONObject obj = new JSONObject();
-                for(GetUserInfo.UserInfo u : users.values())
-                    obj.put(u.id, u.toString());
-                SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
-                sp.edit().putString(context.getString(R.string.sp_users), obj.toString()).apply();
-                Log.d("talkie", "Saved users data");
+                    JSONObject obj = new JSONObject();
+                    for(GetUserInfo.UserInfo u : users.values())
+                        obj.put(u.id, u.toString());
+                    SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
+                    sp.edit().putString(context.getString(R.string.sp_users), obj.toString()).apply();
+                    Log.d("talkie", "Saved users data");
                 } catch (JSONException e) {
                     Log.e("Talkie","Error on saving users");
                 }
@@ -219,6 +233,47 @@ public class MemoryManger{
         }
     }
 
+    public static BitmapDrawable loadImage(final String _url, final String id, final Context context, final Callback cb){
+        if(imgs.containsKey(id))
+            return imgs.get(id);
+        else if(new File(MemoryManger.getImagePath(id)).exists()){
+            imgs.put(id, new BitmapDrawable(context.getResources(), MemoryManger.getImagePath(id)));
+            return imgs.get(id);
+        }else if(_url != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    URL url;
+                    BufferedOutputStream out;
+                    InputStream in;
+                    BufferedInputStream buf;
+                    try {
+                        url = new URL(_url);
+                        in = url.openStream();
+                        // Read the inputstream
+                        buf = new BufferedInputStream(in);
+
+                        // Convert the BufferedInputStream to a Bitmap
+                        final Bitmap bMap = BitmapFactory.decodeStream(buf);
+                        if (in != null) {
+                            in.close();
+                        }
+                        if (buf != null) {
+                            buf.close();
+                        }
+                        MemoryManger.saveImage(context, bMap, id);
+
+                        imgs.put(id, new BitmapDrawable(context.getResources(), bMap));
+                        if(cb != null)
+                            cb.call();
+                    } catch (Exception e) {
+                        Log.e("Error reading file", e.toString());
+                    }
+                }
+            }).start();
+        }
+        return new BitmapDrawable(context.getResources(), BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher_background));
+    }
     public static void saveImage(final Context context, final Bitmap bm, final String id, final Callback callback){
         new Thread(new Runnable() {
             @Override
@@ -259,5 +314,3 @@ public class MemoryManger{
         void call();
     }
 }
-
-//TODO conversations Saving, loading and sorting

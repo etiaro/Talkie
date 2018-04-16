@@ -7,6 +7,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
@@ -41,11 +43,19 @@ public class Notifications {
             PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, intent, 0);
             builder.setContentIntent(pendingIntent);
         }
-        Notification(Context c, Message msg){
+        Notification(final Context c, final Message msg){
             style = new NotificationCompat.InboxStyle()
                     .addLine(msg.text);
             builder = new NotificationCompat.Builder(c, "Talkie")
-                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setLargeIcon(MemoryManger.loadImage(MemoryManger.conversations.get(msg.conversation_id).image,
+                            msg.conversation_id, c, new MemoryManger.Callback() {
+                        @Override
+                        public void call() {
+                            builder.setLargeIcon(MemoryManger.loadImage(MemoryManger.conversations.get(msg.conversation_id).image,
+                                    msg.conversation_id, c,this).getBitmap());
+                        }
+                    }).getBitmap())
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setStyle(style);
             this.id = notifications.size();
             Intent intent = new Intent(c, ConversationActivity.class);

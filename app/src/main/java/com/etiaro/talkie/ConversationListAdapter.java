@@ -24,7 +24,6 @@ import java.util.List;
 
 public class ConversationListAdapter extends ArrayAdapter<Conversation> {
     Context context;
-    public HashMap<String, Drawable> imgs = new HashMap<>();
 
     public ConversationListAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
@@ -45,7 +44,7 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             v = vi.inflate(R.layout.conversation_row, null);
         }
 
-        Conversation conv = getItem(position);
+        final Conversation conv = getItem(position);
 
         if (conv != null) {
             final ImageView img = v.findViewById(R.id.conversationImage);
@@ -53,17 +52,12 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             TextView msg = v.findViewById(R.id.conversationMessage);
 
             if (img != null) {
-                if(imgs.containsKey(conv.thread_key)){//file is loaded, loading from variable
-                    img.setBackground(imgs.get(conv.thread_key));
-                }else if(new File(MemoryManger.getImagePath(conv.thread_key)).exists()) { //file exists, loading
-                    imgs.put(conv.thread_key, Drawable.createFromPath(MemoryManger.getImagePath(conv.thread_key)));
-                    img.setBackground(imgs.get(conv.thread_key));
-                }else if(conv.image != null) {//downloading image
-                    InternetService.loadImage(conv.image, this, conv.thread_key, context);
-                    imgs.put(conv.thread_key, ContextCompat.getDrawable(context, R.drawable.ic_launcher_background));
-                    img.setBackground(imgs.get(conv.thread_key));
-                }
-
+                img.setBackground(MemoryManger.loadImage(conv.image, conv.thread_key, context, new MemoryManger.Callback() {
+                    @Override
+                    public void call() {
+                        img.setBackground(MemoryManger.loadImage(conv.image, conv.thread_key, context, this));
+                    }
+                }));
             }
 
             if (name != null)
