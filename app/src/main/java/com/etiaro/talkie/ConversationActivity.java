@@ -17,13 +17,14 @@ import java.util.List;
 
 public class ConversationActivity extends AppCompatActivity {
     String conversationID;
-    String userID;  //TODO intent
+    String accountID;  //TODO intent
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
         conversationID = getIntent().getStringExtra("thread_key");
+        accountID = getIntent().getStringExtra("userID");
         if(conversationID == null){
             finish();
             return;
@@ -36,7 +37,7 @@ public class ConversationActivity extends AppCompatActivity {
         super.onStart();
         if(MemoryManger.conversations.containsKey(conversationID))
             showMessages();
-        new GetConversationHistory((Account)MemoryManger.accounts.values().toArray()[0], conversationID, 20, 0f)
+        new GetConversationHistory((Account)MemoryManger.accounts.get(accountID), conversationID, 20, 0f)
             .execute(new GetConversationHistory.ConversationHistoryCallback() {
                 @Override
                 public void success(Conversation conversation) {

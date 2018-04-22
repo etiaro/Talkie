@@ -73,6 +73,7 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
                 Log.d("click", c.name);
                 Intent intent = new Intent(context, ConversationActivity.class);
                 intent.putExtra("thread_key", c.thread_key);
+                intent.putExtra("userID", c.accountID);
                 context.startActivity(intent);
             }
         });
