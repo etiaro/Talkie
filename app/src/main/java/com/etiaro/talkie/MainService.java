@@ -36,7 +36,8 @@ public class MainService extends IntentService {
                 Listen.start(this, a, new Listen.ListenCallbacks() {
                     @Override
                     public void newMessage(final Message msg) {
-                        Notifications.newMessage(MainService.this, msg);
+                        if(!ConversationActivity.activeConvID.equals(msg.conversation_id))
+                            Notifications.newMessage(MainService.this, msg);
                         if(MemoryManger.conversations.containsKey(msg.conversation_id)){
                             Conversation tmp = MemoryManger.conversations.get(msg.conversation_id);
                             tmp.updateMessages(msg);

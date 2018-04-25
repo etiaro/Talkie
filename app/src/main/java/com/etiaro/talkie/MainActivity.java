@@ -13,11 +13,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.etiaro.facebook.Account;
 import com.etiaro.facebook.Message;
 import com.etiaro.facebook.functions.GetConversationList;
 import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.functions.GetUserInfo;
 import com.etiaro.facebook.functions.Listen;
+import com.etiaro.facebook.functions.SendMessage;
 
 import java.util.ArrayList;
 
@@ -65,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     private void runLoginActv(){
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);

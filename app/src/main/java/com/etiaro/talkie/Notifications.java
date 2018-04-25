@@ -55,8 +55,9 @@ public class Notifications {
                                     msg.conversation_id, c,this).getBitmap());
                         }
                     }).getBitmap())
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setStyle(style);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) //TODO notifications not showing on. 4.4
+                builder.setSmallIcon(R.drawable.ic_launcher_foreground);
             this.id = notifications.size();
             Intent intent = new Intent(c, ConversationActivity.class);
             intent.putExtra("thread_key", msg.conversation_id);

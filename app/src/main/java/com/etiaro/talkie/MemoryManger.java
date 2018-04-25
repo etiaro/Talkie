@@ -177,7 +177,8 @@ public class MemoryManger{
             public void run() {
                 JSONObject json = new JSONObject();
                 int num = 50; //saves ONLY @num newest conversations
-                for(Conversation c : conversations.values()) {
+                Conversation convs[] = conversations.values().toArray(new Conversation[conversations.size()]);//avoid concurrentModificationException
+                for(Conversation c : convs) {
                     if(num-- < 0)
                         break;
                     try {
