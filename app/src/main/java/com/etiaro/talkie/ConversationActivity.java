@@ -9,16 +9,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.etiaro.facebook.Account;
 import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.Message;
 import com.etiaro.facebook.functions.GetConversationHistory;
+import com.etiaro.facebook.functions.Listen;
 import com.etiaro.facebook.functions.SendMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class ConversationActivity extends AppCompatActivity {
     String conversationID;
@@ -36,20 +40,23 @@ public class ConversationActivity extends AppCompatActivity {
             return;
         }
         setTitle(MemoryManger.conversations.get(conversationID).name);
-        FloatingActionButton btn = findViewById(R.id.floatingActionButton);
+        Button btn = findViewById(R.id.sendButton);
+        final EditText messageBox = findViewById(R.id.message);
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SendMessage sm = new SendMessage((Account)MemoryManger.accounts.values().toArray()[0], MemoryManger.conversations.get(conversationID), "(y)", 0);
+                String msg = messageBox.getText().toString();
+                messageBox.getText().clear();
+
+                SendMessage sm = new SendMessage((Account)MemoryManger.accounts.values().toArray()[0], MemoryManger.conversations.get(conversationID), msg, 0);
                 sm.execute(new SendMessage.SendMessageCallback() {
                     @Override
                     public void success() {
-                        Log.d("suc", "sent?");
                     }
 
                     @Override
                     public void fail() {
-                        Log.d("fai", "not sent?");
                     }
                 });
             }
@@ -88,6 +95,17 @@ public class ConversationActivity extends AppCompatActivity {
         if(Notifications.notifications.containsKey(conversationID))
             Notifications.notifications.get(conversationID).remove(this);
         activeConvID = conversationID;
+
+        MainService.start(this, new Listen.ListenCallbacks() {
+            @Override
+            public void newMessage(Message msg) {
+                showMessages();
+            }
+
+            @Override
+            public void typing(String threadid, String userid, boolean isTyping) {
+            }
+        });
     }
 
     @Override
@@ -99,8 +117,10 @@ public class ConversationActivity extends AppCompatActivity {
     private void showMessages(){
         ArrayList<String> items = new ArrayList<>();
         int length = MemoryManger.conversations.get(conversationID).messages.size();
-        for(int i = length-1; i >= 0; i--)
-            items.add(((Message)MemoryManger.conversations.get(conversationID).messages.values().toArray()[i]).text);
+        for(int i = length-1; i >= 0; i--) {
+            Message msg = (Message) MemoryManger.conversations.get(conversationID).messages.values().toArray()[i];
+            items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text);
+        }
         final ArrayAdapter<String> arr = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         this.runOnUiThread(new Runnable() {
             @Override
