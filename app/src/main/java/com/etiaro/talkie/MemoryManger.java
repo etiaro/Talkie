@@ -11,6 +11,7 @@ import android.telecom.Call;
 import android.util.Log;
 
 import com.etiaro.facebook.Account;
+import com.etiaro.facebook.Attachment;
 import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.functions.GetUserInfo;
 
@@ -42,6 +43,7 @@ public class MemoryManger{
     //Thats the singlethon stuff
     private static MemoryManger instance = null;
     private static HashMap<String, BitmapDrawable> imgs = new HashMap<>();
+    private static HashMap<String, Drawable> attachmects = new HashMap<>(); //TODO
 
     protected MemoryManger() {}
     public static MemoryManger getInstance() {

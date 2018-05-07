@@ -40,7 +40,7 @@ public class ConversationActivity extends AppCompatActivity {
             return;
         }
         setTitle(MemoryManger.conversations.get(conversationID).name);
-        Button btn = findViewById(R.id.sendButton);
+        ImageButton btn = findViewById(R.id.sendButton);
         final EditText messageBox = findViewById(R.id.message);
 
         btn.setOnClickListener(new View.OnClickListener() {
@@ -61,6 +61,7 @@ public class ConversationActivity extends AppCompatActivity {
                 });
             }
         });
+        //TODO scroll listener & load more
     }
 
     @Override
@@ -119,7 +120,10 @@ public class ConversationActivity extends AppCompatActivity {
         int length = MemoryManger.conversations.get(conversationID).messages.size();
         for(int i = length-1; i >= 0; i--) {
             Message msg = (Message) MemoryManger.conversations.get(conversationID).messages.values().toArray()[i];
-            items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text);
+            if(msg.attachments.size() > 0)
+                items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text + " --> " + msg.attachments.get(0).previewUrl);
+            else
+                items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text);
         }
         final ArrayAdapter<String> arr = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         this.runOnUiThread(new Runnable() {
