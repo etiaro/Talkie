@@ -37,12 +37,9 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
-        if (v == null) {
-            LayoutInflater vi;
-            vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.conversation_row, null);
-        }
+        LayoutInflater vi;
+        vi = LayoutInflater.from(getContext());
+        View v = vi.inflate(R.layout.conversation_row, null);
 
         final Conversation conv = getItem(position);
 

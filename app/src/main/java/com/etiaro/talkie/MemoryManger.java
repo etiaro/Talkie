@@ -190,7 +190,7 @@ public class MemoryManger{
                     }
                 }
                 SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), context.MODE_PRIVATE);
-                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();
+                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();  //TODO every conv in other value
                 Log.d("info", "saved conversations");
                 if(callback != null)
                     callback.call();

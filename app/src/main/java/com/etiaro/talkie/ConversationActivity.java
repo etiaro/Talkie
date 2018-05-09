@@ -28,6 +28,7 @@ public class ConversationActivity extends AppCompatActivity {
     String conversationID;
     String accountID;  //TODO intent
     public static String activeConvID = "";
+    MessageListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,21 +117,20 @@ public class ConversationActivity extends AppCompatActivity {
     }
 
     private void showMessages(){
-        ArrayList<String> items = new ArrayList<>();
-        int length = MemoryManger.conversations.get(conversationID).messages.size();
-        for(int i = length-1; i >= 0; i--) {
-            Message msg = (Message) MemoryManger.conversations.get(conversationID).messages.values().toArray()[i];
-            if(msg.attachments.size() > 0)
-                items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text + " --> " + msg.attachments.get(0).previewUrl);
-            else
-                items.add(MemoryManger.conversations.get(conversationID).nicknames.get(msg.senderID) + ": " + msg.text);
-        }
-        final ArrayAdapter<String> arr = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((ListView)findViewById(R.id.messages)).setAdapter(arr);
-                ((ListView)findViewById(R.id.messages)).setSelection(arr.getCount()-1);
+                ListView view = findViewById(R.id.messages);
+                if(adapter == null) {
+                    adapter = new MessageListAdapter(ConversationActivity.this, R.layout.conversation_row, conversationID);
+                            //new ArrayList<>(MemoryManger.conversations.get(conversationID).messages.values()));
+                    view.setAdapter(adapter);
+                }else {
+                    adapter.clear();
+                    adapter.addAll(new ArrayList<>(MemoryManger.conversations.get(conversationID).messages.values()));
+                    adapter.notifyDataSetChanged();
+                }
+                ((ListView)findViewById(R.id.messages)).setSelection(adapter.getCount()-1);
             }
         });
     }
