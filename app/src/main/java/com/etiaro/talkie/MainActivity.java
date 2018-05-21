@@ -21,7 +21,10 @@ import com.etiaro.facebook.functions.GetUserInfo;
 import com.etiaro.facebook.functions.Listen;
 import com.etiaro.facebook.functions.SendMessage;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     ConversationListAdapter arr;
@@ -45,27 +48,32 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
-        MemoryManger.loadSharedPrefs(this, new MemoryManger.Callback() {
-            @Override
-            public void call() {
-                if(MemoryManger.getInstance().accounts.size() <= 0) {
-                    runLoginActv();
-                }else{
+        MemoryManger.loadSharedPrefs(this);
+        if(MemoryManger.getInstance().accounts.size() <= 0) {
+            runLoginActv();
+        }else{
+            showList();
+            updateConversationList();
+            MainService.start(MainActivity.this, new Listen.ListenCallbacks() {
+                @Override
+                public void newMessage(Message msg) {
                     showList();
-                    updateConversationList();
-                    MainService.start(MainActivity.this, new Listen.ListenCallbacks() {
-                        @Override
-                        public void newMessage(Message msg) {
-                            showList();
-                        }
-
-                        @Override
-                        public void typing(String threadid, String userid, boolean isTyping) {
-                        }
-                    });
                 }
-            }
-        });
+
+                @Override
+                public void typing(String threadid, String userid, boolean isTyping) { }
+
+                @Override
+                public void presenceUpdate(Map<String, Long> users){ }
+
+                @Override
+                public void readReceipt(JSONObject delta){}
+
+                @Override
+                public void deliveryReceipt(JSONObject delta){}
+
+            });
+        }
     }
     private void runLoginActv(){
         Intent intent = new Intent(this, LoginActivity.class);

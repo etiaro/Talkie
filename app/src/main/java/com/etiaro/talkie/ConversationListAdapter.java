@@ -49,10 +49,10 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             TextView msg = v.findViewById(R.id.conversationMessage);
 
             if (img != null) {
-                img.setBackground(MemoryManger.loadImage(conv.image, conv.thread_key, context, new MemoryManger.Callback() {
+                img.setImageDrawable(MemoryManger.loadImage(conv.image, conv.thread_key, context, new MemoryManger.Callback() {
                     @Override
                     public void call() {
-                        img.setBackground(MemoryManger.loadImage(conv.image, conv.thread_key, context, this));
+                        img.setImageDrawable(MemoryManger.loadImage(conv.image, conv.thread_key, context, this));
                     }
                 }));
             }

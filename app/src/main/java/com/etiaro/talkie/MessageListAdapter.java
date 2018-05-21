@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,40 +51,53 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
             TextView timeView = v.findViewById(R.id.message_time);
             TextView msgView = v.findViewById(R.id.message_text);
 
-            if(msg.senderID.equals(MemoryManger.conversations.get(conversationID).accountID))
-                if(MemoryManger.conversations.get(conversationID).outgoing_bubble_color == null || MemoryManger.conversations.get(conversationID).outgoing_bubble_color.equals("null"))
-                    v.findViewById(R.id.message_text).getBackground().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
-                else
-                    v.findViewById(R.id.message_text).getBackground().setColorFilter(Color.parseColor("#"+MemoryManger.conversations.get(conversationID).outgoing_bubble_color), PorterDuff.Mode.MULTIPLY);
+
+            if (msgView != null)
+                if(msg.delivered) {
+                    msgView.setText("#" + msg.text);
+                }else
+                    msgView.setText(msg.text);
+
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams)msgView.getLayoutParams();
+            if(position <= 0 || !getItem(position-1).senderID.equals(msg.senderID))
+                params.topMargin = 30;
             else
-                v.findViewById(R.id.message_text).getBackground().setColorFilter(Color.rgb(210, 210, 210), PorterDuff.Mode.MULTIPLY);
+                params.topMargin = 0;
+            msgView.setLayoutParams(params);
+
+            if(msg.senderID.equals(MemoryManger.conversations.get(conversationID).accountID))
+                msgView.getBackground().setColorFilter(Color.parseColor("#"+MemoryManger.conversations.get(conversationID).outgoing_bubble_color), PorterDuff.Mode.MULTIPLY);
+            else
+                msgView.getBackground().setColorFilter(Color.rgb(210, 210, 210), PorterDuff.Mode.MULTIPLY);
 
 
             if (imgView != null) {
                 if(position + 1 >= getCount() || !getItem(position+1).senderID.equals(msg.senderID)) {
-                    imgView.setBackground(MemoryManger.loadImage(MemoryManger.users.get(msg.senderID).thumbSrc, msg.senderID, context, new MemoryManger.Callback() {
+                    imgView.setImageDrawable(MemoryManger.loadImage(MemoryManger.users.get(msg.senderID).thumbSrc, msg.senderID, context, new MemoryManger.Callback() {
                         @Override
                         public void call() {
-                            imgView.setBackground(MemoryManger.loadImage(MemoryManger.users.get(msg.senderID).thumbSrc, msg.senderID, context, this));
+                            imgView.setImageDrawable(MemoryManger.loadImage(MemoryManger.users.get(msg.senderID).thumbSrc, msg.senderID, context, this));
                         }
                     }));
                 }else {
-                    imgView.setBackground(null);
+                    imgView.setImageDrawable(null);
                 }
             }
 
             if (timeView != null)
-                if(position == 0 || getItem(position-1).timestamp_precise+300000 < msg.timestamp_precise) {
+                if(position == 0 || getItem(position-1).timestamp_precise+600000 < msg.timestamp_precise) {
                     Calendar c = Calendar.getInstance();
                     c.setTimeInMillis(msg.timestamp_precise);
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+                    SimpleDateFormat sdf;
+                    if(c.get(Calendar.YEAR) == Calendar.getInstance().get(Calendar.YEAR) && c.get(Calendar.DAY_OF_YEAR) == Calendar.getInstance().get(Calendar.DAY_OF_YEAR))
+                        sdf = new SimpleDateFormat("HH:mm");
+                    else
+                        sdf = new SimpleDateFormat("dd MMM ''YY' at 'HH:mm");
                     timeView.setText(sdf.format(c.getTime()));
                 }else {
                     timeView.setVisibility(GONE);
                     timeView.setText("");
                 }
-            if (msgView != null)
-                msgView.setText(msg.text);
         }
 
         return v;

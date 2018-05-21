@@ -14,6 +14,7 @@ import com.etiaro.facebook.Account;
 import com.etiaro.facebook.Attachment;
 import com.etiaro.facebook.Conversation;
 import com.etiaro.facebook.functions.GetUserInfo;
+import com.etiaro.facebook.functions.Login;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +44,7 @@ public class MemoryManger{
     //Thats the singlethon stuff
     private static MemoryManger instance = null;
     private static HashMap<String, BitmapDrawable> imgs = new HashMap<>();
+    public static HashMap<String, Long> onlineUsers = new HashMap<>();
     private static HashMap<String, Drawable> attachmects = new HashMap<>(); //TODO
 
     protected MemoryManger() {}
@@ -76,60 +78,45 @@ public class MemoryManger{
         saveAccIDs(context, null);
     }
 
-    public static void loadSharedPrefs(final Context context, final Callback callback){
-        new Thread(new Runnable(){
-            @Override
-            public void run() {
-                SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.shared_pref_codes), Context.MODE_PRIVATE);;
-                String IDs = sharedPref.getString(context.getString(R.string.shared_pref_codes), null);
-                try{
-                    JSONArray obj = new JSONArray(IDs);
-                    //accounts
-                    for(int i = 0; i < obj.length(); i++){
-                        SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+obj.getString(i), Context.MODE_PRIVATE);
-                        String JSON = sp.getString(context.getString(R.string.sp_account), null);
-                        if(JSON == null)
-                            continue;
-                        Account ac = new Account(JSON);
-                        accounts.put(ac.getUserID(), ac);
-                    }
-                    //users
-                    SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
-                    String JSON = sp.getString(context.getString(R.string.sp_users), null);
-                    if(JSON != null) {
-                        JSONObject users = new JSONObject(JSON);
-                        Iterator<String> it = users.keys();
-                        while (it.hasNext()) {
-                            String key = it.next();
-                            MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
-                        }
-                    }
-                    //conversations
-                    sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
-                    JSON = sp.getString(context.getString(R.string.sp_conversations), null);
-                    if(JSON != null) {
-                        JSONObject convs = new JSONObject(JSON);
-                        Iterator<String> it = convs.keys();
-                        while (it.hasNext()) {
-                            String key = it.next();
-                            conversations.put(key, new Conversation(convs.getJSONObject(key), convs.getJSONObject(key).getString("accountID")));
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e("Talkie", "Critical error while parsing accounts data "+e.toString());
-                }
-                saveAccIDs(context); //to delete failed accounts
-
-                Log.d("talkie", "loaded accounts data");
-
-                if(callback != null)
-                    callback.call();
+    public static void loadSharedPrefs(Context context){
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.shared_pref_codes), Context.MODE_PRIVATE);;
+        String IDs = sharedPref.getString(context.getString(R.string.shared_pref_codes), null);
+        try{
+            JSONArray obj = new JSONArray(IDs);
+            //accounts
+            for(int i = 0; i < obj.length(); i++){
+                SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_codes)+"."+obj.getString(i), Context.MODE_PRIVATE);
+                String JSON = sp.getString(context.getString(R.string.sp_account), null);
+                if(JSON == null)
+                    continue;
+                Account ac = new Account(JSON);
+                accounts.put(ac.getUserID(), ac);
             }
-        }).start();
-    }
-    public static void loadSharedPrefs(final Context context){
-        loadSharedPrefs(context, null);
+            //users
+            SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_users), Context.MODE_PRIVATE);
+            String JSON = sp.getString(context.getString(R.string.sp_users), null);
+            if(JSON != null) {
+                JSONObject users = new JSONObject(JSON);
+                Iterator<String> it = users.keys();
+                while (it.hasNext()) {
+                    String key = it.next();
+                    MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
+                }
+            }
+            //conversations
+            sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
+            for(Map.Entry<String, ?> conv : sp.getAll().entrySet()){
+                JSONObject tmp = new JSONObject((String)conv.getValue());
+                conversations.put(conv.getKey(), new Conversation(tmp, tmp.getString("accountID")));
+            }
+            sortConversations();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("Talkie", "Critical error while parsing accounts data "+e.toString());
+        }
+        saveAccIDs(context); //to delete failed accounts
+
+        Log.d("talkie", "loaded accounts data");
     }
 
     public static void updateUsers(final Context context, GetUserInfo.UserInfo... list){
@@ -177,20 +164,12 @@ public class MemoryManger{
         new Thread(new Runnable() {
             @Override
             public void run() {
-                JSONObject json = new JSONObject();
-                int num = 50; //saves ONLY @num newest conversations
                 Conversation convs[] = conversations.values().toArray(new Conversation[conversations.size()]);//avoid concurrentModificationException
+                SharedPreferences.Editor sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), context.MODE_PRIVATE).edit();
                 for(Conversation c : convs) {
-                    if(num-- < 0)
-                        break;
-                    try {
-                        json.put(c.thread_key, c.toJSON());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    sp.putString(c.thread_key, c.toString());
                 }
-                SharedPreferences sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), context.MODE_PRIVATE);
-                sp.edit().putString(context.getString(R.string.sp_conversations), json.toString()).apply();  //TODO every conv in other value
+                sp.apply();
                 Log.d("info", "saved conversations");
                 if(callback != null)
                     callback.call();
@@ -207,7 +186,7 @@ public class MemoryManger{
                 try {
                     conversations.get(c.thread_key).update(c.toJSON());
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Log.e("updateConv", e.toString());
                 }
             else
                 conversations.put(c.thread_key, c);
@@ -311,6 +290,14 @@ public class MemoryManger{
     }
     public static String getImagePath(String id){
         return "/data/data/com.etiaro.talkie/app_thumbImg/"+id+".jpg";
+    }
+
+    public static void updateOnlineUsers(Map<String, Long> users){
+        for(Account ac : accounts.values())
+            for(Map.Entry<String, Long> u: users.entrySet()){
+                onlineUsers.put(u.getKey(), u.getValue());
+                //TODO online green icon on imgs drawables
+            }
     }
 
     public interface Callback{

@@ -9,13 +9,14 @@
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackground">
 
-        <ImageView
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/conversationImage"
             android:layout_width="40sp"
             android:layout_height="40sp"
             android:layout_margin="10sp"
-            android:background="@drawable/ic_launcher_background"
-            android:src="@drawable/circleshape"/>
+            android:src="@drawable/ic_launcher_background"/>
 
         <TableLayout
             android:layout_width="match_parent"
