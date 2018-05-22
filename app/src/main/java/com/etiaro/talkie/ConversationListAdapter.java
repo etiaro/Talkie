@@ -47,6 +47,12 @@ public class ConversationListAdapter extends ArrayAdapter<Conversation> {
             final ImageView img = v.findViewById(R.id.conversationImage);
             TextView name = v.findViewById(R.id.conversationName);
             TextView msg = v.findViewById(R.id.conversationMessage);
+            ImageView onlinecricle = v.findViewById(R.id.onlinecircle);
+
+            if(MemoryManger.getUserStatus(conv.thread_key) != null && MemoryManger.getUserStatus(conv.thread_key)==0L)
+                onlinecricle.setVisibility(View.VISIBLE);
+            else
+                onlinecricle.setVisibility(View.GONE);
 
             if (img != null) {
                 img.setImageDrawable(MemoryManger.loadImage(conv.image, conv.thread_key, context, new MemoryManger.Callback() {

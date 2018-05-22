@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
 
 public class ConversationActivity extends AppCompatActivity {
     String conversationID;
-    String accountID;  //TODO intent
+    String accountID;
     public static String activeConvID = "";
     MessageListAdapter adapter;
 
@@ -156,15 +156,15 @@ public class ConversationActivity extends AppCompatActivity {
     private void showStatus() {
         TextView status = findViewById(R.id.status);
         ImageView circle = findViewById(R.id.onlinecircle);
-        if (!MemoryManger.onlineUsers.containsKey(conversationID)) {
+        if (MemoryManger.getUserStatus(conversationID)==null) {
             circle.setVisibility(View.GONE);
             status.setText("");
-        } else if (MemoryManger.onlineUsers.get(conversationID) == 0l){
+        } else if (MemoryManger.getUserStatus(conversationID) == 0l){
             circle.setVisibility(View.VISIBLE);
             status.setText("Online");
         }else {
             circle.setVisibility(View.GONE);
-            status.setText("Offline for " + (Calendar.getInstance().getTimeInMillis()-MemoryManger.onlineUsers.get(conversationID))/60000 + "minutes");
+            status.setText("Offline for " + (Calendar.getInstance().getTimeInMillis()-MemoryManger.getUserStatus(conversationID))/60000 + " minutes");
         }
     }
     private void showMessages(){

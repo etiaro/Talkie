@@ -44,7 +44,7 @@ public class MemoryManger{
     //Thats the singlethon stuff
     private static MemoryManger instance = null;
     private static HashMap<String, BitmapDrawable> imgs = new HashMap<>();
-    public static HashMap<String, Long> onlineUsers = new HashMap<>();
+    private static HashMap<String, Long> onlineUsers = new HashMap<>();
     private static HashMap<String, Drawable> attachmects = new HashMap<>(); //TODO
 
     protected MemoryManger() {}
@@ -103,6 +103,11 @@ public class MemoryManger{
                     MemoryManger.users.put(key, new GetUserInfo.UserInfo(new JSONObject(users.getString(key))));
                 }
             }
+            //onlinestatus
+            sp = context.getSharedPreferences(context.getString(R.string.shared_pref_status), Context.MODE_PRIVATE);
+            for(Map.Entry<String, ?> user : sp.getAll().entrySet()){
+                onlineUsers.put(user.getKey(), (Long)user.getValue());
+            }
             //conversations
             sp = context.getSharedPreferences(context.getString(R.string.shared_pref_conversations), Context.MODE_PRIVATE);
             for(Map.Entry<String, ?> conv : sp.getAll().entrySet()){
@@ -118,7 +123,22 @@ public class MemoryManger{
 
         Log.d("talkie", "loaded accounts data");
     }
-
+    public static void updateOnlineStatus(Context context, String user, Long status){
+        onlineUsers.put(user, status);
+        context.getSharedPreferences(context.getString(R.string.shared_pref_status), Context.MODE_PRIVATE).edit()
+                .putLong(user, status).apply();
+    }
+    public static void updateOnlineStatus(Context c, Map<String, Long> users){
+        for(Map.Entry<String, Long> user : users.entrySet()){
+            updateOnlineStatus(c, user.getKey(), user.getValue());
+        }
+    }
+    public static Long getUserStatus(String user){
+        if(onlineUsers.containsKey(user))
+            return onlineUsers.get(user);
+        else
+            return null;
+    }
     public static void updateUsers(final Context context, GetUserInfo.UserInfo... list){
         for(GetUserInfo.UserInfo u : list) {
             if(users.containsKey(u.id))
@@ -291,15 +311,6 @@ public class MemoryManger{
     public static String getImagePath(String id){
         return "/data/data/com.etiaro.talkie/app_thumbImg/"+id+".jpg";
     }
-
-    public static void updateOnlineUsers(Map<String, Long> users){
-        for(Account ac : accounts.values())
-            for(Map.Entry<String, Long> u: users.entrySet()){
-                onlineUsers.put(u.getKey(), u.getValue());
-                //TODO online green icon on imgs drawables
-            }
-    }
-
     public interface Callback{
         void call();
     }

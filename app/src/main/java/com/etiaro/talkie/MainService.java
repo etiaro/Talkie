@@ -84,7 +84,7 @@ public class MainService extends IntentService {
 
                     @Override
                     public void presenceUpdate(Map<String, Long> users){
-                        MemoryManger.updateOnlineUsers(users);
+                        MemoryManger.updateOnlineStatus(MainService.this, users);
                         callbacks.presenceUpdate(users);
                     }
 

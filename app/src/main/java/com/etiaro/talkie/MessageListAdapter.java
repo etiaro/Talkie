@@ -51,6 +51,13 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
             TextView timeView = v.findViewById(R.id.message_time);
             TextView msgView = v.findViewById(R.id.message_text);
 
+            if(!msg.senderID.equals(MemoryManger.conversations.get(conversationID).accountID)) {
+                ImageView onlinecricle = v.findViewById(R.id.onlinecircle);
+                if (MemoryManger.getUserStatus(msg.senderID) != null && MemoryManger.getUserStatus(msg.senderID) == 0L)
+                    onlinecricle.setVisibility(View.VISIBLE);
+                else
+                    onlinecricle.setVisibility(View.GONE);
+            }
 
             if (msgView != null)
                 if(msg.delivered) {
@@ -81,6 +88,8 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
                     }));
                 }else {
                     imgView.setImageDrawable(null);
+                    if(!msg.senderID.equals(MemoryManger.conversations.get(conversationID).accountID))
+                        v.findViewById(R.id.onlinecircle).setVisibility(GONE);
                 }
             }
 
