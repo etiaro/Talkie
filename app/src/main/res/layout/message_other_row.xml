@@ -34,6 +34,7 @@
         app:layout_constraintTop_toBottomOf="@+id/message_time" />
 
 
+
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/message_image"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -43,5 +44,12 @@
         android:src="@drawable/ic_launcher_background"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="@+id/message_text"/>
+    <ImageView
+        android:id="@+id/onlinecircle"
+        android:layout_width="14sp"
+        android:layout_height="14sp"
+        android:src="@drawable/onlinecircle"
+        app:layout_constraintBottom_toBottomOf="@id/message_image"
+        app:layout_constraintRight_toRightOf="@id/message_image"/>
 
 </android.support.constraint.ConstraintLayout>

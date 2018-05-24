@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 public void typing(String threadid, String userid, boolean isTyping) { }
 
                 @Override
-                public void presenceUpdate(Map<String, Long> users){ }
+                public void presenceUpdate(Map<String, Long> users){ showList(); }
 
                 @Override
                 public void readReceipt(JSONObject delta){}

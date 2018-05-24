@@ -1,57 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content" android:orientation="vertical"
     android:layout_width="fill_parent">
 
-    <TableRow android:layout_width="fill_parent"
+    <TableRow
         android:id="@+id/TableRow01"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackground">
 
+        <android.support.constraint.ConstraintLayout
+            android:layout_margin="10sp">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/conversationImage"
+                android:layout_width="40sp"
+                android:layout_height="40sp"
+                android:src="@drawable/ic_launcher_background" />
+            <ImageView
+                android:id="@+id/onlinecircle"
+                android:layout_width="15sp"
+                android:layout_height="15sp"
+                android:src="@drawable/onlinecircle"
+                app:layout_constraintBottom_toBottomOf="@id/conversationImage"
+                app:layout_constraintRight_toRightOf="@id/conversationImage"/>
+        </android.support.constraint.ConstraintLayout>
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/conversationImage"
-            android:layout_width="40sp"
-            android:layout_height="40sp"
-            android:layout_margin="10sp"
-            android:src="@drawable/ic_launcher_background"/>
 
         <TableLayout
+            android:layout_marginTop="9sp"
+            android:layout_marginBottom="5sp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" >
+                android:layout_height="match_parent">
 
                 <TextView
                     android:id="@+id/conversationName"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5sp"
-                    android:layout_weight="1"
-                    android:height="30sp"
                     android:text="conversationName"
                     android:textColor="@android:color/black"
-                    android:textSize="20sp" />
+                    android:textSize="16sp" />
             </TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" >
+                android:layout_height="match_parent">
 
                 <TextView
                     android:id="@+id/conversationMessage"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3sp"
-                    android:layout_weight="1"
-                    android:height="25sp"
                     android:text="Last Message"
                     android:textColor="@android:color/darker_gray"
-                    android:textSize="15sp" />
+                    android:textSize="14sp" />
             </TableRow>
 
         </TableLayout>

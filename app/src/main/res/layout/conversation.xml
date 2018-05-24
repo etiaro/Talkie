@@ -31,12 +31,13 @@
                 android:layout_height="10sp"
                 android:src="@drawable/onlinecircle"
                 android:layout_margin="2dp"
+                android:layout_marginRight="4dp"
+                app:layout_constraintRight_toLeftOf="@id/status"
                 app:layout_constraintTop_toBottomOf="@id/conversationName"/>
             <TextView
                 android:id="@+id/status"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:layout_marginLeft="4dp"
                 android:textColor="@android:color/white"
                 android:textSize="10sp"
                 android:textStyle="bold"

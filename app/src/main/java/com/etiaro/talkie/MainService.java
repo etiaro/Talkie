@@ -92,10 +92,10 @@ public class MainService extends IntentService {
                     public void readReceipt(JSONObject delta){
                         //TODO update online-status
                         try {
-                            if(delta.has("threadFbId"))   //GROUP
-                                    MemoryManger.conversations.get(delta.getString("thread_fbid")).addReadReceipt(delta.getString("actorFbId"), delta.getLong("actionTimestampMs"));
+                            if(delta.getJSONObject("thread_key").has("threadFbId"))   //GROUP
+                                    MemoryManger.conversations.get(delta.getJSONObject("thread_key").getString("thread_fbid")).addReadReceipt(delta.getString("actorFbId"), delta.getLong("actionTimestampMs"));
                             else   // one-to-one
-                                MemoryManger.conversations.get(delta.getString("actorFbId")).addReadReceipt(delta.getString("actorFbId"), delta.getLong("actionTimestampMs"));
+                                MemoryManger.conversations.get(delta.getJSONObject("thread_key").getString("otherUserFbId")).addReadReceipt(delta.getString("actorFbId"), delta.getLong("actionTimestampMs"));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

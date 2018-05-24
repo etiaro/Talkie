@@ -154,18 +154,23 @@ public class ConversationActivity extends AppCompatActivity {
         activeConvID = "";
     }
     private void showStatus() {
-        TextView status = findViewById(R.id.status);
-        ImageView circle = findViewById(R.id.onlinecircle);
-        if (MemoryManger.getUserStatus(conversationID)==null) {
-            circle.setVisibility(View.GONE);
-            status.setText("");
-        } else if (MemoryManger.getUserStatus(conversationID) == 0l){
-            circle.setVisibility(View.VISIBLE);
-            status.setText("Online");
-        }else {
-            circle.setVisibility(View.GONE);
-            status.setText("Offline for " + (Calendar.getInstance().getTimeInMillis()-MemoryManger.getUserStatus(conversationID))/60000 + " minutes");
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView status = findViewById(R.id.status);
+                ImageView circle = findViewById(R.id.onlinecircle);
+                if (MemoryManger.getUserStatus(conversationID)==null) {
+                    circle.setVisibility(View.GONE);
+                    status.setText("");
+                } else if (MemoryManger.getUserStatus(conversationID) == 0l){
+                    circle.setVisibility(View.VISIBLE);
+                    status.setText("Online");
+                }else {
+                    circle.setVisibility(View.GONE);
+                    status.setText("Offline for " + (Calendar.getInstance().getTimeInMillis()-MemoryManger.getUserStatus(conversationID))/60000 + " minutes");
+                }
+            }
+        });
     }
     private void showMessages(){
         this.runOnUiThread(new Runnable() {

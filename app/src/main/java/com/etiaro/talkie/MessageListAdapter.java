@@ -57,13 +57,33 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
                     onlinecricle.setVisibility(View.VISIBLE);
                 else
                     onlinecricle.setVisibility(View.GONE);
+            }else{
+                TextView receipt = v.findViewById(R.id.receiptText);
+                if(msg.sent){
+                    receipt.setVisibility(View.VISIBLE);
+                    receipt.setText("Sent");
+                    if(getNextSentByMe(position) != null && getItem(getNextSentByMe(position)).sent){
+                        receipt.setVisibility(GONE);
+                    }
+                }
+                if(msg.delivered){
+                    receipt.setVisibility(View.VISIBLE);
+                    receipt.setText("Delivered");
+                    if(getNextSentByMe(position) != null && getItem(getNextSentByMe(position)).delivered){
+                        receipt.setVisibility(GONE);
+                    }
+                }
+                if(!msg.unread){
+                    receipt.setVisibility(View.VISIBLE);
+                    receipt.setText("Read");
+                    if(getNextSentByMe(position) != null && !getItem(getNextSentByMe(position)).unread){
+                        receipt.setVisibility(GONE);
+                    }
+                }
             }
 
             if (msgView != null)
-                if(msg.delivered) {
-                    msgView.setText("#" + msg.text);
-                }else
-                    msgView.setText(msg.text);
+                msgView.setText(msg.text);
 
             ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams)msgView.getLayoutParams();
             if(position <= 0 || !getItem(position-1).senderID.equals(msg.senderID))
@@ -112,4 +132,11 @@ public class MessageListAdapter extends ArrayAdapter<Message> {
         return v;
     }
 
+    Integer getNextSentByMe(int pos){
+        for(int i = pos+1; i < getCount(); i++){
+            if(getItem(i).senderID.equals(MemoryManger.conversations.get(conversationID).accountID))
+                return i;
+        }
+        return null;
+    }
 }
